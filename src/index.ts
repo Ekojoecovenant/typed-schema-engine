@@ -1,4 +1,5 @@
 import { int, text, boolean } from './columns';
+import { db } from './query';
 import { InferInsertRow, InferSelectRow, InferUpdateRow, table } from './schema';
 
 // Define a sample table
@@ -8,6 +9,15 @@ const User = table("users", {
   isActive: boolean(),
   age: int({ nullable: true }),
 });
+
+// --- SELECT example ---
+type UserRow = InferSelectRow<typeof User>;
+const userRow: UserRow = {
+  id: 42,
+  name: null,
+  isActive: true,
+  age: null
+}
 
 // --- INSERT example ----
 type UserInsert = InferInsertRow<typeof User>;
@@ -32,14 +42,21 @@ const validUpdate: UserUpdate = {
   age: null,
 }
 
-// type UserRow = InferSelectRow<typeof User>;
-// const userRow: UserRow = {
-//   id: 42,
-//   name: null,
-//   isActive: true,
-//   age: null
-// }
+// Usage example
+async function testQuery() {
+  const result = await db.select().from(User).execute();
 
-// Just for runtime check
-// console.log(User);
-// console.log(userRow);  
+  // result is InferSelectRow<typeof User>[] - Promise<UserRow[]>
+  console.log("Query result:", result);
+
+  // Type-safe access
+  if (result.length > 0) {
+    const first = result[0];
+    // first.name -> string | null
+    // first.id -> number
+    if (first)
+      console.log(first.name?.toUpperCase());
+  }
+}
+
+testQuery().catch(console.error);
