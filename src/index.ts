@@ -10,8 +10,17 @@ const User = table("users", {
 });
 
 type UserRow = InferSelectRow<typeof User>;
+const userRow: UserRow = {
+  id: 2,
+  name: null,
+  isActive: true,
+  age: null
+}
+
 
 console.log("First inferred row type:", User);
 
 // Just for runtime check
 console.log(User);
+console.log(userRow); 
+console.log(typeof userRow); 
