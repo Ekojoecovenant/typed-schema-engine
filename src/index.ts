@@ -1,4 +1,5 @@
 import { int, text, boolean } from './columns';
+import { eq } from './conditions';
 import { db } from './query';
 import { InferInsertRow, InferSelectRow, InferUpdateRow, table } from './schema';
 
@@ -74,4 +75,21 @@ async function testSQLGeneration() {
   console.log("Executed result (placeholder):", result);
 }
 
-testSQLGeneration().catch(console.error);
+// testSQLGeneration().catch(console.error);
+
+async function testWhere() {
+  const builder = db
+    .select()
+    .from(User)
+    .where(eq(User, "id", 42))
+    .where(eq(User, "name", "Cove"));
+
+  const sqlInfo = builder.toSQL();
+  console.log("Where SQL:", sqlInfo.sql);
+  console.log("Where Params:", sqlInfo.params);
+
+  const result = await builder.execute();
+  console.log("Result:", result);
+}
+
+testWhere().catch(console.error);
