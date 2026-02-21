@@ -59,4 +59,19 @@ async function testQuery() {
   }
 }
 
-testQuery().catch(console.error);
+// testQuery().catch(console.error);
+
+async function testSQLGeneration() {
+  const builder = db.select().from(User);
+
+  const sqlInfo = builder.toSQL();
+  console.log("Manual toSQL check:");
+  console.log(sqlInfo.sql);
+  console.log(sqlInfo.params);
+
+  // Log SQL
+  const result = await builder.execute();
+  console.log("Executed result (placeholder):", result);
+}
+
+testSQLGeneration().catch(console.error);
