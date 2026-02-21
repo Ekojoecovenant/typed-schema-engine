@@ -26,7 +26,27 @@ export type InferSelectField<C extends ColumnDefinition> =
     ? InferKind<C["kind"]> | null
     : InferKind<C["kind"]>;
 
-// Infer the full row type for SELECT (full fields, nullable respected)
+// Infer SELECT (full fields, nullable respected)
 export type InferSelectRow<T extends { columns: Record<string, ColumnDefinition> }> = {
   [K in keyof T["columns"]]: InferSelectField<T["columns"][K]>;
+};
+
+// Infer INSERT shape:
+// - Required fields: non-nullale columns without default
+// - Optional fields: nullable columns
+export type InferInsertRow<T extends { columns: Record<string, ColumnDefinition> }> = {
+  [K in keyof T["columns"]]:
+    T["columns"][K]["nullable"] extends true
+      ? InferKind<T["columns"][K]["kind"]> | null | undefined // nullable
+      : InferKind<T["columns"][K]["kind"]>; // non-nullable
+};
+
+// Infer UPDATE shape:
+// - Everything optional
+// - Set to null only if nullable
+export type InferUpdateRow<T extends { columns: Record<string, ColumnDefinition> }> = {
+  [K in keyof T["columns"]]?:
+    T["columns"][K]["nullable"] extends true
+      ? InferKind<T["columns"][K]['kind']> | null | undefined
+      : InferKind<T["columns"][K]["kind"]> | undefined;
 };
