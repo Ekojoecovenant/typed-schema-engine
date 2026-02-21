@@ -1,8 +1,9 @@
 import { int, text } from './columns';
 
-const idCol = int(); // { kind: "int", nullable: false }
-const nameCol = text({ nullable: true }); // { kind: "text", nullable: true }
+const id = int(); // { kind: "int", nullable: false }
+const name = text({ nullable: true }); // { kind: "text", nullable: true }
 
-console.log("First columns:", idCol, nameCol);
+console.log("First columns:", id, name);
 
-type IdType = typeof idCol;
+// type IdCol = typeof id;
+// type NameCol = typeof name;
