@@ -4,7 +4,7 @@
   "description": "Brutal mini type-safe query builder / ORM - learning advanced TS generics &amp; inference",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },

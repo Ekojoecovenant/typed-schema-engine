@@ -1,5 +1,8 @@
-console.log("Tiny-orm is alive");
+import { int, text } from './columns';
 
-type Hello = "Cove is cool";
-const msg: Hello = "Cove is cool";
-console.log(msg);
+const idCol = int(); // { kind: "int", nullable: false }
+const nameCol = text({ nullable: true }); // { kind: "text", nullable: true }
+
+console.log("Mommy's first columns:", idCol, nameCol);
+
+type IdType = typeof idCol;
