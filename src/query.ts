@@ -1,5 +1,5 @@
 import { ColumnDefinition } from './columns'
-import { Condition } from './conditions';
+import type { Condition } from './conditions';
 import { InferSelectRow } from './schema';
 
 // Loose constraint to pass table objects
@@ -10,6 +10,7 @@ type AnyTable = {
 
 // Builder state: carries table + collects conditions
 interface SelectBuilder<TTable extends AnyTable> {
+  where(condition: Condition): SelectBuilder<TTable>;
   toSQL(): { sql: string; params: any[] };
   execute(): Promise<InferSelectRow<TTable>[]>;
 }
@@ -21,6 +22,11 @@ class SelectBuilderImpl<TTable extends AnyTable> implements SelectBuilder<TTable
 
   constructor(table: TTable) {
     this.table = table;
+  }
+
+  where(condition: Condition): SelectBuilder<TTable> {
+    this.conditions.push(condition);
+    return this;
   }
 
   toSQL(): { sql: string; params: any[] } {
