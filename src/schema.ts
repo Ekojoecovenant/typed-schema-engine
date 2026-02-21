@@ -35,10 +35,13 @@ export type InferSelectRow<T extends { columns: Record<string, ColumnDefinition>
 // - Required fields: non-nullale columns without default
 // - Optional fields: nullable columns
 export type InferInsertRow<T extends { columns: Record<string, ColumnDefinition> }> = {
-  [K in keyof T["columns"]]:
+  [K in keyof T["columns"] as T["columns"][K]["nullable"] extends true ? never : K]:
     T["columns"][K]["nullable"] extends true
-      ? InferKind<T["columns"][K]["kind"]> | null | undefined // nullable
+      ? InferKind<T["columns"][K]["kind"]> | null // nullable
       : InferKind<T["columns"][K]["kind"]>; // non-nullable
+} & {
+  [K in keyof T["columns"] as T["columns"][K]["nullable"] extends true ? K : never]?:
+    InferKind<T["columns"][K]["kind"]> | null;
 };
 
 // Infer UPDATE shape:
@@ -47,6 +50,6 @@ export type InferInsertRow<T extends { columns: Record<string, ColumnDefinition>
 export type InferUpdateRow<T extends { columns: Record<string, ColumnDefinition> }> = {
   [K in keyof T["columns"]]?:
     T["columns"][K]["nullable"] extends true
-      ? InferKind<T["columns"][K]['kind']> | null | undefined
-      : InferKind<T["columns"][K]["kind"]> | undefined;
+      ? InferKind<T["columns"][K]['kind']> | null
+      : InferKind<T["columns"][K]["kind"]>;
 };
