@@ -28,16 +28,25 @@ export function table<
 }
 
 // Infer the runtime type of a single column
-type InferColumnType<C extends ColumnDefinition> =
+// export type InferColumnType<C extends ColumnDefinition> =
+// C["kind"] extends "int" ? C["nullable"] :
+// C["kind"] extends "text" ? C["nullable"] :
+// C["kind"] extends "boolean" ? C["nullable"]:
+// never;
+
+export type InferColumnType<C extends ColumnDefinition> =
   C["kind"] extends "int" ? number :
   C["kind"] extends "text" ? string :
   C["kind"] extends "boolean" ? boolean :
   never;
 
+// nullable check
+export type InferSelectField<C extends ColumnDefinition> =
+  C extends { nullable: true }
+    ? InferColumnType<C> | null
+    : InferColumnType<C>;
+
 // Infer the full row type for SELECT (full fields, nullable respected)
 export type InferSelectRow<TTable extends TableDefinition<any, any>> = {
-  [K in keyof TTable["columns"]]:
-    TTable["columns"][K]["nullable"] extends true
-      ? InferColumnType<TTable["columns"][K]> | null
-      : InferColumnType<TTable["columns"][K]>;
+  [K in keyof TTable["columns"]]: InferSelectField<TTable["columns"][K]>;
 };
