@@ -1,9 +1,17 @@
-import { int, text } from './columns';
+import { int, text, boolean } from './columns';
+import { InferSelectRow, table } from './schema';
 
-const id = int(); // { kind: "int", nullable: false }
-const name = text({ nullable: true }); // { kind: "text", nullable: true }
+// Define a sample table
+const User = table("users", {
+  id: int(),
+  name: text({ nullable: true }),
+  isActive: boolean(),
+  age: int({ nullable: true }),
+});
 
-console.log("First columns:", id, name);
+type UserRow = InferSelectRow<typeof User>;
 
-// type IdCol = typeof id;
-// type NameCol = typeof name;
+console.log("First inferred row type:", User);
+
+// Just for runtime check
+console.log(User);
