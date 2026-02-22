@@ -106,21 +106,52 @@ async function testWhere() {
 
 // testWhere().catch(console.error);
 
-async function testInsert() {
-  const insert = db
+// async function testInsert() {
+//   const insert = db
+//     .insertInto(User)
+//     .values({
+//       id: 1,
+//       name: null,
+//       isActive: true,
+//     });
+  
+//   const sqlInfo = insert.toSQL();
+//   console.log("Insert SQL:", sqlInfo.sql);
+//   console.log("Insert Params:", sqlInfo.params);
+
+//   const result = await insert.execute();
+//   console.log("Insert result:", result);
+// }
+
+// testInsert().catch(console.error);
+
+async function testReturning() {
+  // full return
+  const fullInsert = db
     .insertInto(User)
     .values({
-      id: 1,
-      name: null,
+      id: 100,
+      name: "Favorite",
       isActive: true,
-    });
-  
-  const sqlInfo = insert.toSQL();
-  console.log("Insert SQL:", sqlInfo.sql);
-  console.log("Insert Params:", sqlInfo.params);
+      age: 25,
+    })
+    .returning();
 
-  const result = await insert.execute();
-  console.log("Insert result:", result);
+  const fullResult = await fullInsert.execute();
+  console.log("Full returning result:", fullResult);
+
+  // partial return
+  const partialInsert = db
+    .insertInto(User)
+    .values({
+      id: 101,
+      name: "Neymar",
+      isActive: false,
+    })
+    .returning([User.columns.id, User.columns.name]);
+
+  const partialResult = await partialInsert.execute();
+  console.log("Partial returning result:", partialResult);
 }
 
-testInsert().catch(console.error);
+testReturning().catch(console.error);
