@@ -16,7 +16,7 @@ export function eq<
   value: InferKind<C["kind"]> // matches column type
 ): Condition {
   return {
-    field: column.key, // runtime string for SQL
+    field: column.key ?? "unknown", // runtime string for SQL
     operator: "=",
     value,
   }
