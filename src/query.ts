@@ -1,5 +1,6 @@
 import { ColumnDefinition } from './columns'
 import type { Condition } from './conditions';
+import { createInsertBuilder } from './insert';
 import { InferSelectRow } from './schema';
 
 // Loose constraint to pass table objects
@@ -67,4 +68,7 @@ export function createQueryBuilder() {
 }
 
 // Singleton db instance (like PrismaClient)
-export const db = createQueryBuilder();
+export const db = {
+  ...createQueryBuilder(),
+  ...createInsertBuilder(),
+}

@@ -92,4 +92,23 @@ async function testWhere() {
   console.log("Result:", result);
 }
 
-testWhere().catch(console.error);
+// testWhere().catch(console.error);
+
+async function testInsert() {
+  const insert = db
+    .insertInto(User)
+    .values({
+      id: 1,
+      name: null,
+      isActive: true,
+    });
+  
+  const sqlInfo = insert.toSQL();
+  console.log("Insert SQL:", sqlInfo.sql);
+  console.log("Insert Params:", sqlInfo.params);
+
+  const result = await insert.execute();
+  console.log("Insert result:", result);
+}
+
+testInsert().catch(console.error);
