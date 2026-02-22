@@ -2,7 +2,7 @@ import { InferInsertRow } from './schema';
 
 type AnyTable = { name: string; columns: Record<string, any> };
 
-interface InsertBuilder<TTable extends AnyTable> {
+export interface InsertBuilder<TTable extends AnyTable> {
   values(data: InferInsertRow<TTable>): this;
   // Later: .returning() for inserted row, .onConflictDoNothing(), etc.
   toSQL(): { sql: string, params: any[] };
