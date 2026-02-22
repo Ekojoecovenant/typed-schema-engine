@@ -5,7 +5,7 @@ type AnyTable = { name: string; columns: Record<string, any> };
 // Interface - public contract for the builder
 export interface InsertBuilder<TTable extends AnyTable> {
   values(data: InferInsertRow<TTable>): this;
-  returning(fields?: Array<keyof InferSelectRow<TTable>>): this; // optional partial return
+  returning(fields?: (keyof InferSelectRow<TTable>)[]): this; // optional partial return
   toSQL(): { sql: string, params: any[] };
   execute(): Promise<InferSelectRow<TTable>[] | { inserted: number }>;
 }
@@ -14,7 +14,7 @@ export interface InsertBuilder<TTable extends AnyTable> {
 class InsertBuilderImpl<TTable extends AnyTable> implements InsertBuilder<TTable> {
   private table: TTable;
   private data?: InferInsertRow<TTable>;
-  private returnFields?: Array<keyof InferSelectRow<TTable>>
+  private returnFields?: (keyof InferSelectRow<TTable>)[] | undefined;
 
   constructor(table: TTable) {
     this.table = table;
@@ -25,7 +25,7 @@ class InsertBuilderImpl<TTable extends AnyTable> implements InsertBuilder<TTable
     return this;
   }
 
-  returning(fields?: Array<keyof InferSelectRow<TTable>>): this {
+  returning(fields?: (keyof InsertBuilder<TTable>)[]): this {
     this.returnFields = fields; // undefined = return all(*)
     return this;
   }
@@ -36,14 +36,12 @@ class InsertBuilderImpl<TTable extends AnyTable> implements InsertBuilder<TTable
       throw new Error("No values provided for insert");
     }
 
-    const columns = Object.keys(this.data);
+    const columns = Object.keys(this.data) as Array<keyof InferInsertRow<TTable>>;
     const valuesPlaceholders = columns.map((_, i) => `$${i + 1}`).join(", ");
-    const columnList = columns.map(c => `"${c}"`).join(", ");
+    const columnList = columns.map(c => `"${String(c)}"`).join(", ");
 
     let sql = `
-      INSERT INTO "${this.table.name}"
-      (${columnList})
-      VALUES (${valuesPlaceholders})
+      INSERT INTO "${this.table.name}" (${columnList}) VALUES (${valuesPlaceholders})
     `.trim();
 
     let returningClause = "RETURNING *";
@@ -64,7 +62,7 @@ class InsertBuilderImpl<TTable extends AnyTable> implements InsertBuilder<TTable
     console.log("[InsertBuilder] Generated SQL:", sql);
     console.log("[InsertBuilder] Params:", params);
 
-    if (this.returnFields) {
+    if (this.returnFields && this.returnFields.length > 0) {
       const fakeRow: Partial<InferSelectRow<TTable>> = {};
       this.returnFields.forEach(f => {
         fakeRow[f] = this.data![f as keyof typeof this.data];

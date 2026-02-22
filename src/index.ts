@@ -127,7 +127,7 @@ async function testWhere() {
 
 async function testReturning() {
   // full return
-  const fullInsert = db
+  const full = db
     .insertInto(User)
     .values({
       id: 100,
@@ -137,10 +137,10 @@ async function testReturning() {
     })
     .returning();
 
-  const fullResult = await fullInsert.execute();
-  console.log("Full returning result:", fullResult);
+  console.log(await full.execute());
+  console.log();
 
-  // partial return
+  //* partial test */
   const partialInsert = db
     .insertInto(User)
     .values({
@@ -148,10 +148,9 @@ async function testReturning() {
       name: "Neymar",
       isActive: false,
     })
-    .returning([User.columns.id, User.columns.name]);
+    .returning(["id", "name"]);
 
-  const partialResult = await partialInsert.execute();
-  console.log("Partial returning result:", partialResult);
+  console.log(await partialInsert.execute());
 }
 
 testReturning().catch(console.error);
