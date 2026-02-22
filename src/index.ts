@@ -81,8 +81,8 @@ async function testWhere() {
   const builder = db
     .select()
     .from(User)
-    .where(eq(User, "id", 42))
-    .where(eq(User, "name", "Cove"));
+    .where(eq(User.columns.id, 42))
+    .where(eq(User.columns.name, "Cove"));
 
   const sqlInfo = builder.toSQL();
   console.log("Where SQL:", sqlInfo.sql);

@@ -10,15 +10,13 @@ export type Condition = {
 
 // Typed eq helper - generic over table & key
 export function eq<
-  TTable extends { columns: Record<string, ColumnDefinition> },
-  K extends keyof TTable["columns"]
+  C extends ColumnDefinition<string, any, any>
 >(
-  table: TTable, // pass the table to infer keys
-  field: K, // literal key like "id"
-  value: InferKind<TTable["columns"][K]["kind"]> // matches column type
+  column: C, // literal key like "id"
+  value: InferKind<C["kind"]> // matches column type
 ): Condition {
   return {
-    field: field as string, // runtime string for SQL
+    field: column.key, // runtime string for SQL
     operator: "=",
     value,
   }

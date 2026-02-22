@@ -11,6 +11,9 @@ export function table<
   name: TName,
   columns: TColumns,
 ): { name: TName; columns: TColumns } {
+  for (const [key, col] of Object.entries(columns)) {
+    (col as any).key = key; // safe case - we know
+  }
   return { name, columns } as const; // lock literals
 }
 
