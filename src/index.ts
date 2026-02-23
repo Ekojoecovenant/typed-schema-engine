@@ -1,4 +1,5 @@
 import { int, text, boolean } from './columns';
+import { eq, gt, inArray, like } from './conditions';
 // import { eq } from './conditions';
 import { db } from './query';
 import { table } from './schema';
@@ -125,32 +126,49 @@ async function testWhere() {
 
 // testInsert().catch(console.error);
 
-async function testReturning() {
-  // full return
-  const full = db
-    .insertInto(User)
-    .values({
-      id: 100,
-      name: "Favorite",
-      isActive: true,
-      age: 25,
-    })
-    .returning();
+// async function testReturning() {
+//   // full return
+//   const full = db
+//     .insertInto(User)
+//     .values({
+//       id: 100,
+//       name: "Favorite",
+//       isActive: true,
+//       age: 25,
+//     })
+//     .returning();
 
-  console.log(await full.execute());
-  console.log();
+//   console.log(await full.execute());
+//   console.log();
 
-  //* partial test */
-  const partialInsert = db
-    .insertInto(User)
-    .values({
-      id: 101,
-      name: "Neymar",
-      isActive: false,
-    })
-    .returning(["id", "name"]);
+//   //* partial test */
+//   const partialInsert = db
+//     .insertInto(User)
+//     .values({
+//       id: 101,
+//       name: "Neymar",
+//       isActive: false,
+//     })
+//     .returning(["id", "name"]);
 
-  console.log(await partialInsert.execute());
+//   console.log(await partialInsert.execute());
+// }
+
+// testReturning().catch(console.error);
+
+
+async function testOperators() {
+  const q = db
+    .select()
+    .from(User)
+    .where(
+      eq(User.columns.id, 42),
+      gt(User.columns.age, 18),
+      like(User.columns.name, "%Cove%"),
+      inArray(User.columns.isActive, [true, false])
+    );
+
+  console.log(q.toSQL());
 }
 
-testReturning().catch(console.error);
+testOperators();

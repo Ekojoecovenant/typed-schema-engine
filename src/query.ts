@@ -11,7 +11,7 @@ type AnyTable = {
 
 // Builder state: carries table + collects conditions
 interface SelectBuilder<TTable extends AnyTable> {
-  where(condition: Condition): SelectBuilder<TTable>;
+  where(...conditions: Condition[]): this;
   toSQL(): { sql: string; params: any[] };
   execute(): Promise<InferSelectRow<TTable>[]>;
 }
@@ -25,8 +25,8 @@ class SelectBuilderImpl<TTable extends AnyTable> implements SelectBuilder<TTable
     this.table = table;
   }
 
-  where(condition: Condition): SelectBuilder<TTable> {
-    this.conditions.push(condition);
+  where(...conditions: Condition[]): this {
+    this.conditions.push(...conditions);
     return this;
   }
 
@@ -36,9 +36,16 @@ class SelectBuilderImpl<TTable extends AnyTable> implements SelectBuilder<TTable
 
     if (this.conditions.length > 0) {
       const whereClauses = this.conditions.map((c, i) => {
-        params.push(c.value);
-        return `"${c.field}" = $${i + 1}`; // pg style params
+        if (c.operator === "IN") {
+          const placeholders = (c.value as any[]).map((_, j) => `$${i + 1 + j}`).join(", ");
+          params.push(...(c.value as any[]));
+          return `"${c.field}" IN (${placeholders})`;
+        } else {
+          params.push(c.value);
+          return `"${c.field}" ${c.operator} $${i + 1}`;
+        }
       });
+      
       sql += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
