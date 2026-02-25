@@ -1,4 +1,5 @@
 import { ColumnDefinition, ColumnKind } from './columns';
+import { AnyTable } from './insert';
 
 // Brand for table objects: (helps narrow later if needed)
 // type TableBrand = { __brand: "table" };
@@ -6,15 +7,18 @@ import { ColumnDefinition, ColumnKind } from './columns';
 // Factory to create a table
 export function table<
   const TName extends string,
-  const TColumns extends Record<string, ColumnDefinition>
+  const TColumns extends Record<string, ColumnDefinition>,
+  const TRelations extends Relations = {}
 >(
   name: TName,
   columns: TColumns,
-): { name: TName; columns: TColumns } {
-  for (const [key, col] of Object.entries(columns)) {
-    (col as any).key = key; // safe case - we know
-  }
-  return { name, columns } as const; // lock literals
+  relations: TRelations = {} as TRelations
+): TableDefinition<TName, TColumns, TRelations> {
+  return {
+    name,
+    columns,
+    relations,
+  } as const;
 }
 
 export type InferKind<K extends ColumnKind> =
@@ -55,4 +59,44 @@ export type InferUpdateRow<T extends { columns: Record<string, ColumnDefinition>
     T["columns"][K]["nullable"] extends true
       ? InferKind<T["columns"][K]['kind']> | null
       : InferKind<T["columns"][K]["kind"]>;
+};
+
+
+// ============================================ //
+// ======== TYPES + HELPERS FOR RELATION ======= // 
+// ============================================ //
+
+// relation kinds
+export type RelationType = "hasMany" | "belongsTo" | "hasOne";
+
+// relation shape
+export type Relation<TTarget extends AnyTable = AnyTable> = {
+  type: RelationType;
+  targetTable: TTarget;
+  foreignKey: string; // field on source table (for belongsTo) or target table (for hasMany)
+  localKey?: string; // field on source table (defaults to "id")
+  targetKey?: string; // field on target table (defaults to "id")
+};
+
+// Relations map
+export type Relations = Record<string, Relation>;
+
+// extends tabledefinition to carry relations
+export interface TableDefinition<
+  TName extends string,
+  TColumns extends Record<string, ColumnDefinition>,
+  TRelations extends Relations = {}
+> {
+  name: TName;
+  columns: TColumns;
+  relations: TRelations;
+}
+
+// Infer SELECT with RELATIONS shape
+export type InferSelectRowWithRelations<
+  TTable extends TableDefinition<string, any, any>
+> = InferSelectRow<TTable> & {
+  [R in keyof TTable["relations"]]?: TTable["relations"][R]["type"] extends "hasMany"
+    ? InferSelectRow<TTable["relations"][R]["targetTable"]>[]
+    : InferSelectRow<TTable["relations"][R]["targetTable"]>
 };

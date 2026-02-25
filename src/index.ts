@@ -1,17 +1,38 @@
 import { int, text, boolean } from './columns';
 import { eq, gt, inArray, like } from './conditions';
-// import { eq } from './conditions';
 import { db } from './query';
-import { table } from './schema';
+import { InferSelectRowWithRelations, table } from './schema';
 // import { InferInsertRow, InferSelectRow, InferUpdateRow, table } from './schema';
 
 // Define a sample table
+
+// const User = table("users", {
+//   id: int(),
+//   name: text({ nullable: true }),
+//   isActive: boolean(),
+//   age: int({ nullable: true }),
+// });
+
+const Post = table("posts", {
+  id: int(),
+  title: text(),
+  content: text({ nullable: true }),
+  userId: int(),
+  createdAt: text(),
+});
 
 const User = table("users", {
   id: int(),
   name: text({ nullable: true }),
   isActive: boolean(),
   age: int({ nullable: true }),
+}, {
+  posts: {
+    type: "hasMany",
+    targetTable: Post,
+    foreignKey: "userId", // on Post
+    targetKey: "id" // on User
+  }
 });
 
 // --- SELECT example ---
@@ -157,18 +178,21 @@ async function testWhere() {
 // testReturning().catch(console.error);
 
 
-async function testOperators() {
-  const q = db
-    .select()
-    .from(User)
-    .where(
-      eq(User.columns.id, 42),
-      gt(User.columns.age, 18),
-      like(User.columns.name, "%Cove%"),
-      inArray(User.columns.isActive, [true, false])
-    );
+// async function testOperators() {
+//   const q = db
+//     .select()
+//     .from(User)
+//     .where(
+//       eq(User.columns.id, 42),
+//       gt(User.columns.age, 18),
+//       like(User.columns.name, "%Cove%"),
+//       inArray(User.columns.isActive, [true, false])
+//     );
 
-  console.log(q.toSQL());
-}
+//   console.log(q.toSQL());
+// }
 
-testOperators();
+// testOperators();
+
+
+type UserWithPosts = InferSelectRowWithRelations<typeof User>;
